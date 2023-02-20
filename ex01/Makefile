@@ -6,12 +6,12 @@ DFLAGS	=	-g -DDEBUG
 ifeq ($(findstring debug, $(MAKECMDGOALS)), debug)
 	CFLAGS	+=	$(DFLAGS)
 endif
-NAME	=	ScalarConversion
+NAME	=	Serialize
 DEP_PATH=	deps/
 OBJ_PATH=	objs/
 SRC_PATH=	$(shell find srcs -type d)
 SRCS	=	main.cpp \
-			ScalarConversion.cpp
+			Data.cpp
 OBJS	=	$(addprefix $(OBJ_PATH), $(SRCS:.cpp=.o))
 DEPS	=	$(addprefix $(DEP_PATH), $(SRCS:.cpp=.d))
 vpath %.cpp $(foreach rep, $(SRC_PATH), $(rep))

@@ -1,6 +1,9 @@
 #include <stdexcept>
 #include <iostream>
 #include <sstream>
+#include <cstdlib>
+#include <climits>
+#include <iomanip>
 #include "ScalarConversion.hpp"
 
 void output(const std::string &charVal, const std::string &intVal, const std::string &floatVal, const std::string &doubleVal)
@@ -33,9 +36,49 @@ ScalarConversion &ScalarConversion::operator=(const ScalarConversion &oth)
 
 ScalarConversion::ScalarConversion(const std::string &input) : _input(input)
 {
+    static const std::string species[6] =
+            {
+            "nan", "nanf", "-inff", "+inff", "-inf", "+inf"
+            };
+
 	if (_input.empty())
 		throw std::invalid_argument("empty string");
-
+    if (isChar(_input))
+    {
+        _type = CHAR;
+        _value = static_cast<long>(_input[0]);
+    }
+    else if (isInt(_input))
+    {
+        _type = INT;
+        _value = std::strtol(_input.c_str(), NULL, 10);
+        if (INT_MAX < _value || INT_MIN > _value)
+            throw std::invalid_argument("overflow");
+    }
+    else if (isFloat(_input))
+    {
+        _type = FLOAT;
+        float tmp = std::strtof(_input.c_str(), NULL);
+        _value = *reinterpret_cast<long*>(&tmp);
+    }
+    else if(isDouble(_input))
+    {
+        _type = DOUBLE;
+        double tmp = std::strtod(_input.c_str(), NULL);
+        _value = *reinterpret_cast<long*>(&tmp);
+    }
+    else
+    {
+        for (int specie = NAN; specie < CHAR; specie++)
+        {
+            if (species[specie] == _input)
+            {
+                _type = static_cast<type_e>(specie);
+                return;
+            }
+        }
+        throw std::invalid_argument("no conversion for this argument");
+    }
 }
 
 void ScalarConversion::convert() const
@@ -89,15 +132,17 @@ void ScalarConversion::convert() const
 
 void ScalarConversion::convertFromChar(char c) const
 {
+    std::stringstream ssChar;
 	std::stringstream ssInt;
 	std::stringstream ssFloat;
 	std::stringstream ssDouble;
 
+    ssChar << c;
 	ssInt << (int)c;
 	ssFloat << (float)c << ".0f";
 	ssDouble << (double)c << ".0";
 	if (std::isprint(c))
-		return output("'" + std::string(&c) + "'", ssInt.str(), ssFloat.str(), ssDouble.str());
+		return output("'" + ssChar.str() + "'", ssInt.str(), ssFloat.str(), ssDouble.str());
 	output("Non displayable", ssInt.str(), ssFloat.str(), ssDouble.str());
 }
 
@@ -162,4 +207,58 @@ void ScalarConversion::convertFromDouble(double d) const
 		return output("Non displayable", ssInt.str(), ssFloat.str(), ssDouble.str());
 	}
 	return output("impossible", ssInt.str(), ssFloat.str(), ssDouble.str());
+}
+
+bool ScalarConversion::isChar(const std::string &basicString)
+{
+    if (basicString.size() != 1)
+        return false;
+    return isascii(basicString[0]) && !std::isdigit(basicString[0]);
+}
+
+bool ScalarConversion::isInt(const std::string &basicString)
+{
+    bool ret = false;
+
+    for (size_t i = (basicString[0] == '-' || basicString[0] == '+') ? 1 : 0; i < basicString.size(); ++i)
+    {
+        ret = true;
+        if (!std::isdigit(basicString[i]))
+            return false;
+    }
+    return ret;
+}
+
+bool ScalarConversion::isFloat(const std::string &basicString)
+{
+    return basicString[basicString.size() - 1] == 'f'
+        && isDouble(basicString.substr(0, basicString.size() - 1));
+}
+
+bool ScalarConversion::isDouble(const std::string &basicString)
+{
+    bool ret = false;
+    size_t i;
+
+    for (i = (basicString[0] == '-' || basicString[0] == '+') ? 1 : 0; i < basicString.size(); ++i)
+    {
+        if (basicString[i] == '.')
+        {
+            ++i;
+            break;
+        }
+        ret = true;
+        if (!std::isdigit(basicString[i]))
+            return false;
+    }
+    if (!ret)
+        return false;
+    ret = false;
+    for (; i < basicString.size(); ++i)
+    {
+        ret = true;
+        if (!std::isdigit(basicString[i]))
+            return false;
+    }
+    return ret;
 }

@@ -35,6 +35,14 @@ private:
 	std::string _input;
 	long _value;
 	type_e _type;
+
+    bool isChar(const std::string &basicString);
+
+    bool isInt(const std::string &basicString);
+
+    bool isFloat(const std::string &basicString);
+
+    bool isDouble(const std::string &basicString);
 };
 
 #endif
