@@ -138,9 +138,9 @@ void ScalarConversion::convertFromChar(char c) const
 	std::stringstream ssDouble;
 
     ssChar << c;
-	ssInt << (int)c;
-	ssFloat << (float)c << ".0f";
-	ssDouble << (double)c << ".0";
+	ssInt << static_cast<int>(c);
+	ssFloat << static_cast<float>(c) << ".0f";
+	ssDouble << static_cast<double>(c) << ".0";
 	if (std::isprint(c))
 		return output("'" + ssChar.str() + "'", ssInt.str(), ssFloat.str(), ssDouble.str());
 	output("Non displayable", ssInt.str(), ssFloat.str(), ssDouble.str());
