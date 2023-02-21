@@ -28,20 +28,17 @@ Base *generate()
 
 void identify(Base *p)
 {
-    A *a = dynamic_cast<A*>(p);
-    if (a)
+    if (dynamic_cast<A*>(p))
     {
         std::cout << "It's a A object" << std::endl;
         return;
     }
-    B *b = dynamic_cast<B*>(p);
-    if (b)
+    if (dynamic_cast<B*>(p))
     {
         std::cout << "It's a B object" << std::endl;
         return;
     }
-    C *c = dynamic_cast<C*>(p);
-    if (c)
+    if (dynamic_cast<C*>(p))
     {
         std::cout << "It's a C object" << std::endl;
         return;
